@@ -1,38 +1,47 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import "/src/css/home.css";
 
 const Home = () => {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      {/* Header Section */}
-      <header className="w-full p-6 bg-blue-600 text-white text-center shadow-md">
-        <h1 className="text-3xl font-bold">Welcome to Library Management System 📚</h1>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex flex-col items-center mt-10">
-        <p className="text-gray-700 text-lg text-center px-4 max-w-lg">
-          A modern and efficient way to manage books, librarians, and students. 
-          Login to access your dashboard.
-        </p>
-
-        {/* Navigation Buttons */}
-        <div className="mt-6 flex space-x-4">
-          <Link to="/login" className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition">
-            Login
-          </Link>
-          <Link to="/about" className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400 transition">
-            About Us
-          </Link>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="absolute bottom-4 text-gray-600 text-sm">
-        © {new Date().getFullYear()} Library Management System. All rights reserved.
-      </footer>
-    </div>
-  );
+	return (
+		<div id="header">
+			<div className="container">
+				<nav>
+					<ul id="menu">
+						<li>
+							<a href="#home">Home</a>
+						</li>
+						<li>
+							<a href="#login">Login</a>
+						</li>
+						<p id="middle">NIRT</p>
+						<li>
+							<a href="#register">Register</a>
+						</li>
+						<li>
+							<a href="#getStarted">Get Started</a>
+						</li>
+						<p id="login">
+							<a href="#login">Log in</a>
+						</p>
+					</ul>
+				</nav>
+			</div>
+			<div className="info">
+				<div className="header-text">
+					<p>Welcome To Our NIRT</p>
+					<p>Library</p>
+					<p id="info-msg">
+						Your one-stop solution for managing your library effectively
+					</p>
+				</div>
+				<div className="search-bar">
+					<input type="text" placeholder="Search Book" />
+					<button>Join Us</button>
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default Home;
