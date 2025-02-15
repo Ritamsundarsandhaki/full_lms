@@ -52,6 +52,60 @@ export const login = async (req, res) => {
   }
 };
 
+
+export const profile = async (req, res) => {
+  try {
+    const librarian = await Librarian.findById( req.librarian._id).select("-password");
+    if (!librarian) {
+      return res.status(404).json({ success: false, message: "Librarian not found" });
+    }
+    res.status(200).json({ success: true, librarian });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+
+export const dashboardData = async (req, res) => {
+  try {
+    // Count total students
+    const totalStudents = await Student.countDocuments();
+
+    // Fetch all books to compute total, issued, and available
+    const books = await Book.find();
+    let totalBooks = 0;
+    let issuedBooks = 0;
+    let availableBooks = 0;
+
+    books.forEach((book) => {
+      totalBooks += book.books.length;
+      book.books.forEach((b) => {
+        if (b.issued) {
+          issuedBooks++;
+        } else {
+          availableBooks++;
+        }
+      });
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalStudents,
+        totalBooks,
+        issuedBooks,
+        availableBooks,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 /**
  * @desc Register a new student
  * @route POST /librarian/register-student
@@ -156,167 +210,177 @@ export const registerBook = async (req, res) => {
       res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
   };
+  export const issueBook = async (req, res) => {
+    try {
+      const { fileNo, bookIds } = req.body;
   
-  
-
-export const issueBook = async (req, res) => {
-  const session = await mongoose.startSession(); // Start a session for transactions
-  session.startTransaction();
-
-  try {
-    const { fileNo, bookIds } = req.body; // Expecting bookIds as an array
-
-    if (!fileNo || !Array.isArray(bookIds) || bookIds.length === 0) {
-      return res.status(400).json({ success: false, message: "Invalid input data" });
-    }
-
-    // Check if student exists
-    const student = await Student.findOne({ fileNo }).session(session);
-    if (!student) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(404).json({ success: false, message: "Student not found" });
-    }
-
-    let issuedBooks = [];
-    let failedBooks = [];
-
-    // Fetch books matching any bookId in the array
-    const books = await Book.find({ "books.bookId": { $in: bookIds } }).session(session);
-
-    // Create a Set of book IDs found in the database
-    const foundBookIds = new Set();
-    books.forEach((book) => {
-      book.books.forEach((b) => {
-        foundBookIds.add(b.bookId);
-      });
-    });
-
-    // Identify books that are not found in the database
-    bookIds.forEach((bookId) => {
-      if (!foundBookIds.has(bookId)) {
-        failedBooks.push({ bookId, reason: "Book not found" });
+      if (!fileNo || !Array.isArray(bookIds) || bookIds.length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "InvalidInput",
+          message: "File number and an array of book IDs are required." 
+        });
       }
-    });
-
-    // Create a map for fast lookup of available books
-    const bookMap = new Map();
-    books.forEach((book) => {
-      book.books.forEach((b) => {
-        if (bookIds.includes(b.bookId) && !b.issued) {
-          bookMap.set(b.bookId, { book, bookInstance: b });
+  
+      // Check if student exists
+      const student = await Student.findOne({ fileNo });
+      if (!student) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "StudentNotFound", 
+          message: "No student found with the given file number." 
+        });
+      }
+  
+      let issuedBooks = [];
+      let failedBooks = [];
+  
+      // Fetch books matching any bookId in the array
+      const books = await Book.find({ "books.bookId": { $in: bookIds } });
+  
+      if (!books || books.length === 0) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "BooksNotFound",
+          message: "No books found matching the provided IDs."
+        });
+      }
+  
+      // Create a Set of found book IDs
+      const foundBookIds = new Set();
+      books.forEach((book) => {
+        book.books.forEach((b) => foundBookIds.add(b.bookId));
+      });
+  
+      // Identify missing books
+      bookIds.forEach((bookId) => {
+        if (!foundBookIds.has(bookId)) {
+          failedBooks.push({ bookId, reason: "Book not found" });
         }
       });
-    });
-
-    // Process issuing books
-    for (const bookId of bookIds) {
-      if (failedBooks.some(b => b.bookId === bookId)) continue; // Skip already failed books
-
-      if (bookMap.has(bookId)) {
-        const { book, bookInstance } = bookMap.get(bookId);
-        bookInstance.issued = true;
-        issuedBooks.push(bookId);
-        student.issuedBooks.push({ bookId, issuedDate: new Date(), returned: false });
-        await book.save({ session });
-      } else {
-        failedBooks.push({ bookId, reason: "Book already issued" });
+  
+      // Create a map for quick lookup of available books
+      const bookMap = new Map();
+      books.forEach((book) => {
+        book.books.forEach((b) => {
+          if (bookIds.includes(b.bookId) && !b.issued) {
+            bookMap.set(b.bookId, { book, bookInstance: b });
+          }
+        });
+      });
+  
+      for (const bookId of bookIds) {
+        if (failedBooks.some((b) => b.bookId === bookId)) continue;
+  
+        if (bookMap.has(bookId)) {
+          const { book, bookInstance } = bookMap.get(bookId);
+          bookInstance.issued = true;
+          issuedBooks.push(bookId);
+          student.issuedBooks.push({ bookId, issuedDate: new Date(), returned: false });
+        } else {
+          failedBooks.push({ bookId, reason: "Book already issued" });
+        }
       }
-    }
-
-    await student.save({ session });
-
-    // Commit the transaction
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(200).json({
-      success: true,
-      message: "Books processed",
-      issuedBooks,
-      failedBooks, // Unified response for not found & unavailable books
-    });
-
-  } catch (error) {
-    await session.abortTransaction();
-    console.log(error)
-    session.endSession();
-    res.status(500).json({ success: false, message: "Server error", error: error.message });
-  }
-};
-
-
-
-export const returnBook = async (req, res) => {
-  const session = await mongoose.startSession(); // Start a session for transactions
-  session.startTransaction();
-
-  try {
-    const { fileNo, bookId } = req.body;
-
-    if (!fileNo || !bookId) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(400).json({ success: false, message: "Missing fileNo or bookId" });
-    }
-
-    // Check if student exists
-    const student = await Student.findOne({ fileNo }).session(session);
-    if (!student) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(404).json({ success: false, message: "Student not found" });
-    }
-
-    // Find the issued book in the student's record
-    const bookIndex = student.issuedBooks.findIndex((b) => b.bookId == bookId && !b.returned);
-    if (bookIndex === -1) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(400).json({ success: false, message: "Book not found in issued list or already returned" });
-    }
-
-    // Mark the book as returned
-    student.issuedBooks[bookIndex].returned = true;
-    student.issuedBooks[bookIndex].returnDate = new Date();
-    await student.save({ session });
-
-    // Find and update the book's status
-    const book = await Book.findOne({ "books.bookId": bookId }).session(session);
-    if (!book) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(404).json({ success: false, message: "Book record not found in library" });
-    }
-
-    let bookUpdated = false;
-    book.books.forEach((b) => {
-      if (b.bookId == bookId) {
-        b.issued = false;
-        bookUpdated = true;
+  
+      if (issuedBooks.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: "NoBooksIssued",
+          message: "No books could be issued. All requested books are either unavailable or already issued.",
+          failedBooks
+        });
       }
-    });
-
-    if (!bookUpdated) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(400).json({ success: false, message: "Book instance not found in records" });
+  
+      // Save changes to student and books
+      await Promise.all([student.save(), ...books.map((book) => book.save())]);
+  
+      res.status(200).json({
+        success: true,
+        message: "Books processed successfully.",
+        issuedBooks,
+        failedBooks,
+      });
+  
+    } catch (error) {
+      console.error("Error issuing books:", error);
+  
+      res.status(500).json({ 
+        success: false, 
+        error: "ServerError", 
+        message: "An unexpected error occurred. Please try again later.", 
+        details: error.message 
+      });
     }
-
-    await book.save({ session });
-
-    // Commit the transaction
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(200).json({ success: true, message: "Book returned successfully", returnedBookId: bookId });
-
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    res.status(500).json({ success: false, message: "Server error", error: error.message });
-  }
-};
+  };
+  
+  export const returnBook = async (req, res) => {
+    try {
+      const { fileNo, bookIds } = req.body;
+  
+      if (!fileNo || !Array.isArray(bookIds) || bookIds.length === 0) {
+        return res.status(400).json({ success: false, message: "File Number and at least one Book ID are required." });
+      }
+  
+      // Check if student exists
+      const student = await Student.findOne({ fileNo });
+      if (!student) {
+        return res.status(404).json({ success: false, message: "Student not found." });
+      }
+  
+      let returnedBooks = [];
+      let notFoundBooks = [];
+  
+      for (const bookId of bookIds) {
+        const bookIndex = student.issuedBooks.findIndex((b) => b.bookId == bookId && !b.returned);
+        if (bookIndex === -1) {
+          notFoundBooks.push(bookId);
+          continue;
+        }
+  
+        student.issuedBooks[bookIndex].returned = true;
+        student.issuedBooks[bookIndex].returnDate = new Date();
+        returnedBooks.push(bookId);
+      }
+  
+      await student.save();
+  
+      if (returnedBooks.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "No books found in issued list or already returned.",
+          notFoundBooks,
+        });
+      }
+  
+      // Update book records
+      const books = await Book.find({ "books.bookId": { $in: returnedBooks } });
+  
+      books.forEach((book) => {
+        book.books.forEach((b) => {
+          if (returnedBooks.includes(b.bookId.toString())) {
+            b.issued = false;
+          }
+        });
+      });
+  
+      for (const book of books) {
+        await book.save();
+      }
+  
+      res.status(200).json({
+        success: true,
+        message: "Books returned successfully.",
+        returnedBooks,
+        notFoundBooks,
+      });
+  
+    } catch (error) {
+      console.error("Error returning books:", error);
+      res.status(500).json({ success: false, message: "Server error. Please try again.", error: error.message });
+    }
+  };
+  
+  
 
 export const searchStudents = async (req, res) => {
     try {
@@ -359,7 +423,6 @@ export const searchStudents = async (req, res) => {
       res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
   };
-
   export const searchBooks = async (req, res) => {
     try {
       const { bookId, title, page = 1, limit = 10 } = req.query;
@@ -371,10 +434,10 @@ export const searchStudents = async (req, res) => {
       let query = {};
   
       if (bookId) {
-        query["books.bookId"] = bookId;
+        query["bookId"] = bookId; // Fixed incorrect query field
       }
       if (title) {
-        query.title = new RegExp(title, "i"); // Case-insensitive search
+        query["title"] = new RegExp(title, "i"); // Case-insensitive search
       }
   
       const books = await Book.find(query)
