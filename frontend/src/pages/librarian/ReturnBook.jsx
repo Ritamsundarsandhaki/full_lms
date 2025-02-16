@@ -1,17 +1,14 @@
 import React, { useState } from "react";
+import api from "../../components/Axios";
+import { motion } from "framer-motion";
 
 const ReturnBook = () => {
-  const [formData, setFormData] = useState({
-    fileNo: "",
-    bookIds: [""], // Start with one book ID input field
-  });
-
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [formData, setFormData] = useState({ fileNo: "", bookIds: [""] });
+  const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e, index) => {
     const { name, value } = e.target;
-
     if (name === "fileNo") {
       setFormData({ ...formData, fileNo: value });
     } else {
@@ -21,94 +18,71 @@ const ReturnBook = () => {
     }
   };
 
-  const addBookField = () => {
-    setFormData({ ...formData, bookIds: [...formData.bookIds, ""] });
-  };
-
-  const removeBookField = (index) => {
-    const updatedBookIds = formData.bookIds.filter((_, i) => i !== index);
-    setFormData({ ...formData, bookIds: updatedBookIds });
-  };
+  const addBookField = () => setFormData({ ...formData, bookIds: [...formData.bookIds, ""] });
+  const removeBookField = (index) => setFormData({ ...formData, bookIds: formData.bookIds.filter((_, i) => i !== index) });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage({ type: "", text: "" });
+    setMessage(null);
 
-    // Validation: Ensure book IDs are at least 5 digits
-    if (formData.bookIds.some((id) => id.length < 5)) {
+    if (!formData.fileNo.trim()) {
+      setMessage({ type: "error", text: "File Number is required." });
+      setLoading(false);
+      return;
+    }
+    if (formData.bookIds.some((id) => id.trim().length < 5)) {
       setMessage({ type: "error", text: "Each Book ID must be at least 5 digits." });
       setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/books/return", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      const response = await api.post("/api/librarian/return-book", formData);
+      setMessage({
+        type: response.data.success ? "success" : "error",
+        text: response.data.message || (response.data.success ? "Books returned successfully!" : "Some books could not be returned."),
+        details: [
+          response.data.returnedBooks?.length ? `✅ Returned: ${response.data.returnedBooks.join(", ")}` : null,
+          response.data.failedBooks?.length ? `❌ Not Found: ${response.data.failedBooks.map(b => `${b.bookId} (${b.reason})`).join(", ")}` : null,
+        ].filter(Boolean),
       });
-
-      const data = await response.json();
-      if (data.success) {
-        setMessage({ type: "success", text: "Book(s) returned successfully!" });
+      if (response.data.success) {
         setFormData({ fileNo: "", bookIds: [""] });
-      } else {
-        setMessage({ type: "error", text: data.message });
       }
     } catch (error) {
-      setMessage({ type: "error", text: "Server error. Please try again." });
+      let errorMessage = "Server error. Please try again.";
+      if (error.response) {
+        errorMessage = error.response.data.message || "An error occurred.";
+        if (error.response.data.errors) {
+          errorMessage += ` ${Object.values(error.response.data.errors).flat().join(" ")}`;
+        }
+      } else if (error.request) {
+        errorMessage = "Network error. Please check your connection.";
+      }
+      setMessage({ type: "error", text: errorMessage });
     }
-
     setLoading(false);
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-green-100 via-yellow-50 to-orange-100 p-6">
-      <div className="w-full max-w-lg bg-white shadow-2xl rounded-2xl p-8 transition-all duration-300 hover:shadow-xl hover:scale-105">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">Return Book</h2>
-
-        {message.text && (
-          <p className={`p-3 text-center rounded-lg font-medium ${message.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-            {message.text}
-          </p>
-        )}
-
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-6">
+      <div className="w-full max-w-lg bg-white shadow-lg rounded-2xl p-8">
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">🔄 Return Book</h2>
+        {message && <Modal message={message} onClose={() => setMessage(null)} />}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* File Number Input */}
-          <InputField type="text" name="fileNo" value={formData.fileNo} onChange={handleChange} placeholder="Student File No" required />
-
-          {/* Book ID Inputs */}
+          <InputField type="text" name="fileNo" value={formData.fileNo} onChange={handleChange} placeholder="📁 Student File No" required />
           {formData.bookIds.map((bookId, index) => (
             <div key={index} className="flex items-center space-x-2">
-              <InputField
-                type="text"
-                name="bookId"
-                value={bookId}
-                onChange={(e) => handleChange(e, index)}
-                placeholder="Book ID (Min 5 digits)"
-                required
-              />
+              <InputField type="text" name="bookId" value={bookId} onChange={(e) => handleChange(e, index)} placeholder="📖 Book ID (Min 5 digits)" required />
               {index > 0 && (
-                <button type="button" onClick={() => removeBookField(index)} className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-                  ✕
-                </button>
+                <button type="button" onClick={() => removeBookField(index)} className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all shadow-md">✖</button>
               )}
             </div>
           ))}
-
-          {/* Add More Books Button */}
-          <button type="button" onClick={addBookField} className="w-full p-3 text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-all">
-            + Add Another Book
-          </button>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full p-3 rounded-lg text-white font-semibold bg-gradient-to-r from-green-400 via-yellow-400 to-orange-400 hover:from-green-500 hover:to-orange-500 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all duration-200 flex justify-center items-center shadow-lg"
-          >
-            {loading ? <LoadingSpinner /> : "Return Book"}
+          <button type="button" onClick={addBookField} className="w-full p-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-md">➕ Add Another Book</button>
+          <button type="submit" disabled={loading} className="w-full p-3 rounded-lg text-white font-semibold bg-gradient-to-r from-green-500 via-yellow-500 to-orange-500 hover:from-green-600 hover:to-orange-600 transition-all flex justify-center items-center shadow-lg">
+            {loading ? <LoadingSpinner /> : "📤 Return Book"}
           </button>
         </form>
       </div>
@@ -116,25 +90,22 @@ const ReturnBook = () => {
   );
 };
 
-// 🔹 Reusable Input Field Component
 const InputField = ({ type, name, value, onChange, placeholder, required }) => (
-  <input
-    type={type}
-    name={name}
-    value={value}
-    onChange={onChange}
-    placeholder={placeholder}
-    required={required}
-    className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:ring-2 focus:ring-green-400 transition-all duration-300 hover:bg-gray-100 hover:shadow-md"
-  />
+  <input type={type} name={name} value={value} onChange={onChange} placeholder={placeholder} required={required} className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:ring-2 focus:ring-green-400 transition-all duration-300 hover:bg-gray-100 hover:shadow-md" />
 );
 
-// 🔹 Loading Spinner Component
 const LoadingSpinner = () => (
-  <svg className="w-5 h-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-  </svg>
+  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-6 h-6 border-4 border-white border-t-transparent rounded-full"></motion.div>
+);
+
+const Modal = ({ message, onClose }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
+    <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="bg-white p-6 rounded-lg shadow-lg text-center">
+      <p className={`text-lg font-semibold ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>{message.text}</p>
+      {message.details?.map((detail, index) => <p key={index} className="text-sm mt-2">{detail}</p>)}
+      <button onClick={onClose} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md">OK</button>
+    </motion.div>
+  </div>
 );
 
 export default ReturnBook;

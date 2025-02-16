@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import api from "../../components/Axios";
+import { motion } from "framer-motion";
 
 const IssueBook = () => {
   const [formData, setFormData] = useState({ fileNo: "", bookIds: [""] });
@@ -38,13 +39,12 @@ const IssueBook = () => {
 
     try {
       const response = await api.post("/api/librarian/issue-book", formData);
-      console.log(response)
       setMessage({
         type: response.data.success ? "success" : "error",
         text: response.data.message || (response.data.success ? "Books issued successfully!" : "Some books could not be issued."),
         details: [
           response.data.issuedBooks?.length ? `✅ Issued: ${response.data.issuedBooks.join(", ")}` : null,
-          response.data.notAvailableBooks?.length ? `❌ Not Available: ${response.data.notAvailableBooks.join(", ")}` : null,
+          response.data.failedBooks?.length ? `❌ Not Available: ${response.data.failedBooks.map(b => `${b.bookId} (${b.reason})`).join(", ")}` : null,
         ].filter(Boolean),
       });
       if (response.data.success) {
@@ -66,44 +66,22 @@ const IssueBook = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 p-6">
-      <div className="w-full max-w-lg bg-white shadow-2xl rounded-2xl p-8 transition-all duration-300 hover:shadow-xl">
-        <h2 className="text-4xl font-bold text-center text-gray-900 mb-6">📚 Issue Book</h2>
-        
-        {message && (
-          <div className={`p-4 rounded-lg text-center text-lg font-medium 
-            ${message.type === "success" ? "bg-green-100 text-green-800 border-l-4 border-green-500" : "bg-red-100 text-red-800 border-l-4 border-red-500"}
-          `}>
-            <p>{message.text}</p>
-            {message.details?.map((detail, index) => (
-              <p key={index} className="text-sm">{detail}</p>
-            ))}
-          </div>
-        )}
-
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-6">
+      <div className="w-full max-w-lg bg-white shadow-lg rounded-2xl p-8">
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">📚 Issue Book</h2>
+        {message && <Modal message={message} onClose={() => setMessage(null)} />}
         <form onSubmit={handleSubmit} className="space-y-5">
           <InputField type="text" name="fileNo" value={formData.fileNo} onChange={handleChange} placeholder="📁 Student File No" required />
-          
           {formData.bookIds.map((bookId, index) => (
             <div key={index} className="flex items-center space-x-2">
               <InputField type="text" name="bookId" value={bookId} onChange={(e) => handleChange(e, index)} placeholder="📖 Book ID (Min 5 digits)" required />
               {index > 0 && (
-                <button type="button" onClick={() => removeBookField(index)} className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all shadow-md">
-                  ✖
-                </button>
+                <button type="button" onClick={() => removeBookField(index)} className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all shadow-md">✖</button>
               )}
             </div>
           ))}
-
-          <button type="button" onClick={addBookField} className="w-full p-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-md hover:shadow-lg">
-            ➕ Add Another Book
-          </button>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full p-3 rounded-lg text-white font-semibold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all duration-200 flex justify-center items-center shadow-lg"
-          >
+          <button type="button" onClick={addBookField} className="w-full p-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all shadow-md">➕ Add Another Book</button>
+          <button type="submit" disabled={loading} className="w-full p-3 rounded-lg text-white font-semibold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 transition-all flex justify-center items-center shadow-lg">
             {loading ? <LoadingSpinner /> : "📤 Issue Book"}
           </button>
         </form>
@@ -113,22 +91,21 @@ const IssueBook = () => {
 };
 
 const InputField = ({ type, name, value, onChange, placeholder, required }) => (
-  <input
-    type={type}
-    name={name}
-    value={value}
-    onChange={onChange}
-    placeholder={placeholder}
-    required={required}
-    className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-400 transition-all duration-300 hover:bg-gray-100 hover:shadow-md"
-  />
+  <input type={type} name={name} value={value} onChange={onChange} placeholder={placeholder} required={required} className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 focus:ring-2 focus:ring-indigo-400 transition-all duration-300 hover:bg-gray-100 hover:shadow-md" />
 );
 
 const LoadingSpinner = () => (
-  <svg className="w-6 h-6 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-  </svg>
+  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="w-6 h-6 border-4 border-white border-t-transparent rounded-full"></motion.div>
+);
+
+const Modal = ({ message, onClose }) => (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
+    <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="bg-white p-6 rounded-lg shadow-lg text-center">
+      <p className={`text-lg font-semibold ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>{message.text}</p>
+      {message.details?.map((detail, index) => <p key={index} className="text-sm mt-2">{detail}</p>)}
+      <button onClick={onClose} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md">OK</button>
+    </motion.div>
+  </div>
 );
 
 export default IssueBook;
