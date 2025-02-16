@@ -1,200 +1,219 @@
 /* Global Styles */
 * {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+	font-family: "Arial", sans-serif;
 }
 :root {
-    --primary-bg: #021E73;
-    --secondary-bg: #0E1F40;
-    --primary-accent: #578BF2;
-    --secondary-accent: #91B2F2;
-    --text-light: #ffffffe5;
-    --text-dark: #111;
+	--primary-bg: #021e73;
+	--secondary-bg: #0e1f40;
+	--primary-accent: #578bf2;
+	--secondary-accent: #91b2f2;
+	--text-light: #ffffffe5;
+	--text-dark: #111;
 }
 
 /* Header Section */
 #header {
-    width: 100%;
-    height: 100vh;
-    padding: 0 16px 150px;
-    background-color: var(--primary-bg);
-    color: var(--text-light);
-    text-align: center;
+	width: 100%;
+	height: 92vh;
+	padding: 0 16px 150px 16px;
+	background-color: var(--primary-bg);
+	color: var(--text-light);
+	text-align: center;
 }
-
-
 
 /* Container Section */
 .container {
-    padding: 32px 16px;
-    max-width: 1300px;
-    margin: 0 auto;
+	padding: 32px 16px;
+	max-width: 1300px;
+	margin: 0 auto;
 }
 
 /* Navigation Bar */
 nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    max-width: 1300px;
-    padding: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	max-width: 1300px;
+	padding: 16px;
+	position: sticky;
+	top: 0;
+	z-index: 1000;
 }
 
 nav ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
+	list-style: none;
+	display: flex;
+	gap: 20px;
 }
 
 nav ul li {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: var(--text-light);
+	padding: 10px 20px;
+	font-size: 16px;
+	color: var(--text-light);
 }
 
 nav ul li a {
-    text-decoration: none;
-    color: var(--text-light);
-    font-size: 1rem;
-    transition: background 0.3s, color 0.3s;
+	text-decoration: none;
+	color: var(--text-light);
+	font-size: 1rem;
+	transition: background 0.3s, color 0.3s;
 }
 
 nav ul li a:hover {
-    color: var(--primary-accent);
+	color: var(--primary-accent);
 }
 
 nav ul li a.active {
-    border-bottom: 2px solid var(--primary-accent);
+	border-bottom: 2px solid var(--primary-accent);
 }
 
-nav #middle{
-    height: 35px;
-    width: 200px;
-    padding: 0px 16pxpx;
-    font-weight: 600;
-    font-size: 25px;
-    margin-top: 5px;
+nav #middle {
+	height: 35px;
+	width: 200px;
+	padding: 0px 16pxpx;
+	font-weight: 600;
+	font-size: 25px;
+	margin-top: 5px;
 }
 
 nav p#login {
-    background: var(--secondary-accent);
-    padding: 12px 26px;
-    border-radius: 30px;
-    transition: background 0.3s, box-shadow 0.3s;
+	background: var(--secondary-accent);
+	padding: 12px 26px;
+	border-radius: 30px;
+	transition: background 0.3s, box-shadow 0.3s;
 }
 nav p#login {
-    color: #000000;
-    width: 100px;
-    height: 50px;
-    font-size: 16px;
-    font-weight: 600;
+	color: #000000;
+	width: 100px;
+	height: 50px;
+	font-size: 16px;
+	font-weight: 600;
 }
 
 nav #login:hover {
-    background: var(--primary-accent);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	background: var(--primary-accent);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .info {
-    display: flex;
-    flex-direction: column;
-    margin: 0 auto;
-    padding: 100px 0 70px;
-    width: 100%;
-    max-width: 1000px;
-    height: auto;
-    position: relative;
+	display: flex;
+	flex-direction: column;
+	margin: 0 auto;
+	padding: 100px 0 70px;
+	width: 100%;
+	max-width: 1000px;
+	height: auto;
+	position: relative;
 }
 
 .header-text {
-    padding: 0 0 30px;
+	padding: 0 0 30px;
 }
 
 .header-text p {
-    max-width: 90%;
-    font-size: 60px;
-    line-height: 1;
-    color: var(--text-light);
-    font-family: Arial, sans-serif;
-    font-weight: bold;
+	max-width: 90%;
+	font-size: 60px;
+	line-height: 1;
+	color: var(--text-light);
+	font-family: Arial, sans-serif;
+	font-weight: bold;
 }
 
 #info-msg {
-    font-size: 20px;
-    color: var(--text-secondary);
-    padding: 30px 0 10px;
+	font-size: 20px;
+	color: var(--text-secondary);
+	padding: 30px 0 10px;
 }
 
 .search-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 16px;
-    margin: 0 200px;
-    background: var(--text-light);
-    width: 500px;
-    height: 68px;
-    border-radius: 40px;
-    color: gray;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 16px;
+	margin: 0 200px;
+	background: var(--text-light);
+	width: 500px;
+	height: 68px;
+	border-radius: 40px;
+	color: gray;
 }
 
 .search-bar input {
-    flex: 1; /* Allows input to grow */
-    padding: 8px 25px;
-    font-size: 16px;
-    border: none;
-    outline: none;
+	flex: 1; /* Allows input to grow */
+	padding: 8px 25px;
+	font-size: 16px;
+	border: none;
+	outline: none;
 }
 
 .search-bar button {
-    width: 110px;
-    height: 50px;
-    padding: 12px 26px;
-    font-size: 16px;
-    background-color: var(--primary-accent);
-    color: var(--text-dark);
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    font-weight: 600;
+	width: 110px;
+	height: 50px;
+	padding: 12px 26px;
+	font-size: 16px;
+	background-color: var(--primary-accent);
+	color: var(--text-dark);
+	border: none;
+	border-radius: 30px;
+	cursor: pointer;
+	font-weight: 600;
 }
 
 .search-bar button:hover {
-    background-color: #0056b3; 
-    color: white;
+	background-color: #0056b3;
+	color: white;
 }
 
+/* 1st image */
+.image span {
+	display: block;
+	z-index: 1;
+	width: 100%;
+	height: 500px;
+	margin: -100px auto 0px;
+	position: relative;
+	max-width: 1000px;
+}
+.image span img {
+	width: 100%;
+	height: 100%;
+	border-radius: 28px 28px 28px 28px;
+	border-width: 12px 12px 12px 12px;
+	border-style: solid solid solid solid;
+	border-color: var(--primary-bg) var(--primary-bg) var(--primary-bg)
+		var(--primary-bg);
+	object-fit: cover;
+}
 
+.fade-in {
+	opacity: 0; /* Initially invisible */
+	transform: translateY(50px); /* Move slightly down */
+	transition: opacity 0.8s ease-out, transform 0.8s ease-out; /* Smooth transition */
+}
 
-
-
-
-
-
-
+.fade-in.visible {
+	opacity: 1; /* Fully visible */
+	transform: translateY(0); /* Move to the original position */
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    #header p {
-        font-size: 1rem;
-    }
+	#header p {
+		font-size: 1rem;
+	}
 
-    nav ul {
-        flex-direction: column;
-        gap: 10px;
-    }
+	nav ul {
+		flex-direction: column;
+		gap: 10px;
+	}
 
-    nav ul li a {
-        display: block;
-        text-align: center;
-    }
+	nav ul li a {
+		display: block;
+		text-align: center;
+	}
 }
-
-
