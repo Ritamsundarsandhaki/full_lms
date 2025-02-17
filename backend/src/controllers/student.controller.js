@@ -37,7 +37,7 @@ export const studentLogin = async (req, res) => {
         sameSite: "strict", // CSRF attack Cross Site request Forgery attack
         secure: process.env.NODE_MODE !== "development",
       });
-    res.status(200).json({ success: true, message: "Login successful",type:"student"  });
+    res.status(200).json({ success: true, message: "Login successful",type:"student" ,token });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
@@ -65,6 +65,11 @@ export const getStudentProfile = async (req, res) => {
  * @desc Get Issued Books with Fine Calculation
  * @route GET /student/issued-books
  */
+/**
+ * @desc Get Issued Books with Fine Calculation
+ * @route GET /student/issued-books
+ */
+
 export const getIssuedBooks = async (req, res) => {
   try {
     const student = await Student.findById(req.user.id).populate("issuedBooks.bookId");
@@ -73,9 +78,11 @@ export const getIssuedBooks = async (req, res) => {
       return res.status(404).json({ success: false, message: "Student not found" });
     }
 
-    const issuedBooks = student.issuedBooks.map((book) => {
-      let fine = 0;
-      if (!book.returned) {
+    // Filter books that are not returned
+    const issuedBooks = student.issuedBooks
+      .filter((book) => !book.returned) // Get only books that are not returned
+      .map((book) => {
+        let fine = 0;
         const dueDate = new Date(book.issueDate);
         dueDate.setDate(dueDate.getDate() + 15); // Due in 15 days
 
@@ -84,22 +91,22 @@ export const getIssuedBooks = async (req, res) => {
           const overdueDays = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
           fine = overdueDays * 5; // Rs. 5 per day
         }
-      }
 
-      return {
-        title: book.bookId?.title,
-        issueDate: book.issueDate,
-        returnDate: book.returnDate,
-        returned: book.returned,
-        fine,
-      };
-    });
+        return {
+          bookId: book,
+          fine
+          
+        };
+      });
 
     res.status(200).json({ success: true, issuedBooks });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
+
+
 
 /**
  * @desc Get Student History of Issued & Returned Books
@@ -114,7 +121,7 @@ export const getStudentHistory = async (req, res) => {
     }
 
     const history = student.issuedBooks.map((book) => ({
-      title: book.bookId?.title,
+      title: book.bookId,
       issueDate: book.issueDate,
       returnDate: book.returnDate || "Not Returned",
       status: book.returned ? "Returned" : "Issued",

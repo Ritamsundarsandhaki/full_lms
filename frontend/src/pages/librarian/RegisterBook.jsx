@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { jsPDF } from "jspdf";
 import api from "../../components/Axios"; // Import the Axios instance
 
 const BookRegistration = () => {
@@ -33,11 +34,9 @@ const BookRegistration = () => {
 
     try {
       const response = await api.post("/api/librarian/register-book", bookData);
-
       if (!response.data.success) {
         setErrorMessage(`⚠️ ${response.data.message}`);
       } else {
-        // ✅ FIX: Reset registered books with fresh data
         setRegisteredBooks(response.data.book.books || []);
         setBookData({ title: "", details: "", stock: "", price: "", course: "", branch: "" });
       }
@@ -48,7 +47,7 @@ const BookRegistration = () => {
     setLoading(false);
   };
 
-  // 📌 Download Barcode as an Image
+  // 📌 Download Single Book Barcode
   const downloadBarcode = async (bookId) => {
     const barcodeUrl = `https://barcodeapi.org/api/code128/${bookId}`;
     try {
@@ -65,6 +64,42 @@ const BookRegistration = () => {
     } catch (error) {
       console.error("Error downloading barcode:", error);
     }
+  };
+
+  // 📄 Generate PDF with all book barcodes
+  const generatePDF = async () => {
+    const doc = new jsPDF();
+    let y = 10;
+
+    for (let book of registeredBooks) {
+      const barcodeUrl = `https://barcodeapi.org/api/code128/${book.bookId}`;
+      
+      try {
+        // Fetch barcode image
+        const img = new Image();
+        img.src = barcodeUrl;
+
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+
+        doc.text(`📖 Book: ${book.title}`, 10, y);
+        doc.text(`🆔 ID: ${book.bookId}`, 10, y + 10);
+        doc.addImage(img, "PNG", 10, y + 20, 80, 30);
+        y += 60;
+
+        // If the page is full, create a new page
+        if (y > 250) {
+          doc.addPage();
+          y = 10;
+        }
+      } catch (error) {
+        console.error(`Error loading barcode for book ID ${book.bookId}`);
+      }
+    }
+
+    doc.save("Library_Barcodes.pdf");
   };
 
   return (
@@ -103,6 +138,12 @@ const BookRegistration = () => {
         {registeredBooks.length > 0 && (
           <div className="mt-8">
             <h3 className="text-2xl font-bold text-gray-800 mb-4">📋 Registered Books</h3>
+            <button
+              onClick={generatePDF}
+              className="mb-4 px-6 py-3 bg-green-600 text-white rounded-lg shadow-md hover:scale-105 transition-all"
+            >
+              📄 Download All Barcodes as PDF
+            </button>
             <div className="grid grid-cols-2 gap-4">
               {registeredBooks.map((book, index) => (
                 <div
@@ -134,22 +175,9 @@ const BookRegistration = () => {
               alt="Book Barcode"
               className="mx-auto w-full h-auto border border-gray-300 rounded-lg"
             />
-            
-            {/* Buttons Section */}
-            <div className="flex space-x-4">
-              <button
-                onClick={() => downloadBarcode(selectedBook.bookId)}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg shadow-md hover:scale-105 transition-all"
-              >
-                ⬇ Download Barcode
-              </button>
-              <button
-                onClick={() => setSelectedBook(null)}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:scale-105 transition-all"
-              >
-                ❌ Close
-              </button>
-            </div>
+            <button onClick={() => setSelectedBook(null)} className="px-4 py-2 bg-red-500 text-white rounded-lg">
+              ❌ Close
+            </button>
           </div>
         </div>
       )}

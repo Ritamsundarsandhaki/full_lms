@@ -39,7 +39,7 @@ export const login = async (req,res) => {
                 secure: process.env.NODE_MODE !== "development",
               });
         
-            res.status(200).json({ success: true, message: "Login successful" ,type:"admin"});
+            res.status(200).json({ success: true, message: "Login successful" ,type:"admin",token});
     } catch (error) {
         
     }

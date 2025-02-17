@@ -48,7 +48,7 @@ const LibrarianDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const isDashboard = location.pathname === "/librarian";
+  const isDashboard = location.pathname === "/librarian/dashboard";
 
   return (
     <div className={`flex min-h-screen transition-all duration-300 ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"}`}>

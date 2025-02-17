@@ -30,7 +30,7 @@ const Login = () => {
       if (data.success) {
         login(data.token, data.type);
         toast.success("Login Successful! Redirecting...", { position: "top-center" });
-        setTimeout(() => navigate(`/${data.type}/dashboard`), 2000);
+        setTimeout(() => navigate(`/${data.type}/dashboard`), 1300);
       } else {
         toast.error(data.message, { position: "top-center" });
       }
@@ -43,7 +43,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 p-6">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-600 to-indigo-800 p-6">
       <ToastContainer autoClose={2000} />
       <div className="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">Welcome Back! 👋</h2>
@@ -55,7 +55,7 @@ const Login = () => {
             <select
               value={userType}
               onChange={(e) => setUserType(e.target.value)}
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             >
               <option value="student">Student</option>
               <option value="librarian">Librarian</option>
@@ -69,7 +69,7 @@ const Login = () => {
             </label>
             <input
               type={userType === "student" ? "text" : "email"}
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               placeholder={`Enter your ${userType === "student" ? "file number" : "email"}`}
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
@@ -81,7 +81,7 @@ const Login = () => {
             <label className="block text-gray-700 font-medium">Password</label>
             <input
               type="password"
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -91,7 +91,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium shadow-md hover:bg-blue-700 transition flex justify-center items-center"
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium shadow-md hover:bg-indigo-700 transition flex justify-center items-center"
             disabled={loading}
           >
             {loading ? (
@@ -105,12 +105,12 @@ const Login = () => {
         <div className="mt-5 text-center text-gray-600">
           <p>
             Don't have an account? {" "}
-            <a href="/register" className="text-blue-500 font-medium hover:underline">
+            <a href="/register" className="text-indigo-500 font-medium hover:underline">
               Sign up
             </a>
           </p>
           <p className="mt-2">
-            <a href="/forgot-password" className="text-gray-500 hover:text-blue-500">
+            <a href="/forgot-password" className="text-gray-500 hover:text-indigo-500">
               Forgot Password?
             </a>
           </p>

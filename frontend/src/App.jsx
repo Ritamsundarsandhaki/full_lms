@@ -27,11 +27,9 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="/student/*" element={<StudentDashboard />} />
-          <Route path="/librarian/*" element={<LibrarianDashboard />} />
 
           {/* Protected Routes */}
-          {/* <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin/*" element={<AdminDashboard />} />
           </Route>
 
@@ -41,7 +39,7 @@ const App = () => {
 
           <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
             <Route path="/student/*" element={<StudentDashboard />} />
-          </Route> */}
+          </Route>
 
 
         </Routes>
