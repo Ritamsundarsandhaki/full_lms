@@ -37,6 +37,8 @@ const studentSchema = new mongoose.Schema(
       required: true,
       enum: ["CSE", "ECE", "EE", "Cyber", "Mining", "ME", "Automobile", "Civil"], // ✅ Corrected spelling
     },
+    resetOtp: { type: String }, // OTP for password reset
+    otpExpiry: { type: Date }, 
     issuedBooks: [
       {
         bookId: { type: String, require:true},

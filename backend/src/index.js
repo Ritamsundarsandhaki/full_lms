@@ -8,8 +8,10 @@ import { connectDB } from "./lib/db.js";
 import adminRouter from "./routes/admin.routes.js";
 import librarianRouter from "./routes/librarian.routes.js";
 import studentRouter from "./routes/student.routes.js";
+import facuityRouter from './routes/faculty.routes.js';
+import authRouter from './routes/auth.routes.js';
 import Admin from "./models/admin.model.js"; // Import Admin model
-
+import morgan from "morgan"; 
 dotenv.config({ path: "./src/.env" });
 
 const app = express();
@@ -28,6 +30,7 @@ app.use(
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(morgan("dev")); 
 
 // ✅ Routes
 app.get("/", (req, res) => {
@@ -36,6 +39,8 @@ app.get("/", (req, res) => {
 app.use("/api/admin", adminRouter);
 app.use("/api/librarian", librarianRouter);
 app.use("/api/student", studentRouter);
+app.use('/api/faculity',facuityRouter)
+app.use('/auth/',authRouter);
 
 // ✅ Error Handling Middleware
 app.use((err, req, res, next) => {

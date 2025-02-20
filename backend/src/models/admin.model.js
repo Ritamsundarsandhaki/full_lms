@@ -6,6 +6,8 @@ const adminSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ["Admin"], default: "Admin" }, // Ensuring only "Admin" role
+  resetOtp: { type: String }, // OTP for password reset
+  otpExpiry: { type: Date }, 
   createdAt: { type: Date, default: Date.now },
 });
 

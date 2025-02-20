@@ -1,6 +1,8 @@
 import Admin from "../models/admin.model.js";
 import Librarian from "../models/librarian.model.js";
 import Student from "../models/student.models.js";
+import Faculty from "../models/faculty.model.js";
+import validator from "validator";
 import Book from "../models/book.models.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -45,16 +47,50 @@ export const login = async (req,res) => {
     }
     
 }
+
+export const logout = async (req, res) => {
+  try {
+    // Clear the jwt cookie
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_MODE !== "development", // Set this to false if running in development mode
+    });
+
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+
+  // npm install validator
+
 export const registerLibrarian = async (req, res) => {
   try {
-    const { name, email, password , mobile,libraryName} = req.body;
+    const { name, email, password, mobile, libraryName } = req.body;
 
-
-    console.log(req)
-    console.log(name,email,password,mobile,libraryName)
-    // Validate input
-    if (!name || !email || !password||!mobile||!libraryName) {
+    // Validate input fields
+    if (!name || !email || !password || !mobile || !libraryName) {
       return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    // Validate email format
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email format" });
+    }
+
+    // Validate password (at least 8 characters, at least 1 number, 1 uppercase, 1 special character)
+    if (!validator.isLength(password, { min: 8 })) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long" });
+    }
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*]/.test(password)) {
+      return res.status(400).json({ success: false, message: "Password must contain at least 1 uppercase letter, 1 number, and 1 special character" });
+    }
+
+    // Validate mobile number (for example: Indian mobile number)
+    if (!validator.isMobilePhone(mobile, 'en-IN')) {
+      return res.status(400).json({ success: false, message: "Invalid mobile number format" });
     }
 
     // Check if librarian already exists
@@ -67,7 +103,7 @@ export const registerLibrarian = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create librarian
-    const librarian = new Librarian({ name, email, password: hashedPassword ,mobile,libraryName,isApproved:true});
+    const librarian = new Librarian({ name, email, password: hashedPassword, mobile, libraryName, isApproved: true });
     await librarian.save();
 
     res.status(201).json({ success: true, message: "Librarian registered successfully", librarian });
@@ -108,6 +144,7 @@ export const getAllStudents = async (req, res) => {
  * @desc Get all books
  * @route GET /admin/books
  */
+
 export const getAllBooks = async (req, res) => {
   try {
     const books = await Book.find();
@@ -117,6 +154,57 @@ export const getAllBooks = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
+
+
+
+export const registerFaculty = async (req, res) => {
+  try {
+    const { name, email, password, employeeId, department, mobile } = req.body;
+
+    // Validate input fields
+    if (!name || !email || !password || !employeeId || !department  || !mobile) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    // Validate email format
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email format" });
+    }
+
+    // Validate password (at least 8 characters, at least 1 number, 1 uppercase, 1 special character)
+    if (!validator.isLength(password, { min: 8 })) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters long" });
+    }
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*]/.test(password)) {
+      return res.status(400).json({ success: false, message: "Password must contain at least 1 uppercase letter, 1 number, and 1 special character" });
+    }
+
+    // Validate mobile number (assuming Indian format)
+    if (!validator.isMobilePhone(mobile, "en-IN")) {
+      return res.status(400).json({ success: false, message: "Invalid mobile number format" });
+    }
+
+
+    // Check if faculty already exists
+    const existingFaculty = await Faculty.findOne({ email });
+    if (existingFaculty) {
+      return res.status(400).json({ success: false, message: "Faculty member with this email already exists" });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create faculty record
+    const faculty = new Faculty({ name, email, password: hashedPassword, employeeId, department, mobile });
+    await faculty.save();
+
+    res.status(201).json({ success: true, message: "Faculty registered successfully", faculty });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 
 /**
  * @desc Check server health

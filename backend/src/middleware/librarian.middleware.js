@@ -3,7 +3,7 @@ import Librarian from "../models/librarian.model.js";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    console.log(req)
+   
     // Get the token from cookies
     const token = req.cookies.jwt;
 

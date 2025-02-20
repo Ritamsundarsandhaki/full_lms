@@ -43,6 +43,21 @@ export const studentLogin = async (req, res) => {
   }
 };
 
+
+export const logout = async (req, res) => {
+  try {
+    // Clear the jwt cookie
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_MODE !== "development", // Set this to false if running in development mode
+    });
+
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
 /**
  * @desc Get Student Profile
  * @route GET /student/profile

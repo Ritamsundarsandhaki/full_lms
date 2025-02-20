@@ -9,7 +9,8 @@ const librarianSchema = new mongoose.Schema({
   libraryName: { type: String, required: true },
   role: { type: String, default: "librarian" }, // Default role
   isApproved: { type: Boolean, default: false }, // Admin approval status
-  
+  resetOtp: { type: String }, // OTP for password reset
+  otpExpiry: { type: Date }, 
   // ✅ History of actions
   history: [
     {
