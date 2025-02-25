@@ -9,10 +9,12 @@ import ReturnBook from "./ReturnBook";
 import SearchBook from "./SearchBook";
 import SearchStudent from "./SearchStudent";
 import Profile from "./Profile";
+import Libraian_Allstudent from "./Libraian_Allstudent";
+import Libraian_uplode_book from "./Libraian_uplode_book";
+import Libraian_uplode_student from "./Libraian_uplode_student";
 
 const LibrarianDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
   const [greeting, setGreeting] = useState("");
   const [dashboardData, setDashboardData] = useState({ totalBooks: 0, totalStudents: 0, issuedBooks: 0, availableBooks: 0 });
   const [loading, setLoading] = useState(true);
@@ -23,11 +25,6 @@ const LibrarianDashboard = () => {
     const hour = new Date().getHours();
     setGreeting(hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening");
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("theme", darkMode ? "dark" : "light");
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -51,7 +48,7 @@ const LibrarianDashboard = () => {
   const isDashboard = location.pathname === "/librarian/dashboard";
 
   return (
-    <div className={`flex min-h-screen transition-all duration-300 ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"}`}>
+    <div className="flex min-h-screen bg-gray-50 text-gray-900 transition-all duration-300">
       <button
         className="md:hidden fixed top-4 left-4 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition z-50"
         onClick={() => setSidebarOpen(true)}
@@ -63,9 +60,9 @@ const LibrarianDashboard = () => {
       <div className="flex-1 px-8 py-6 md:ml-64 transition-all duration-300">
         {isDashboard && (
           <>
-            <div className="mb-6 p-6 bg-white dark:bg-gray-800 shadow-lg rounded-2xl flex flex-col items-center">
+            <div className="mb-6 p-6 bg-white shadow-lg rounded-2xl flex flex-col items-center">
               <h1 className="text-3xl font-bold">{greeting}, Librarian!</h1>
-              <p className="text-lg mt-2 text-gray-600 dark:text-gray-300">Manage your library efficiently.</p>
+              <p className="text-lg mt-2 text-gray-600">Manage your library efficiently.</p>
             </div>
             {loading ? (
               <p className="text-center text-lg">Loading dashboard data...</p>
@@ -80,31 +77,29 @@ const LibrarianDashboard = () => {
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-              <QuickActionCard title="Register Book" link="register-book" color="bg-purple-600" />
-              <QuickActionCard title="Register Student" link="register-student" color="bg-orange-500" />
-              <QuickActionCard title="Issue Book" link="issuebook" color="bg-blue-700" />
-              <QuickActionCard title="Return Book" link="returnbook" color="bg-red-500" />
-              <QuickActionCard title="Search Book" link="searchbook" color="bg-teal-600" />
-              <QuickActionCard title="Search Student" link="search-student" color="bg-indigo-600" />
-              <QuickActionCard title="Edit Profile" link="profile" color="bg-gray-700" />
+              <QuickActionCard title="Register Book" link="/librarian/register-book" color="bg-purple-600" />
+              <QuickActionCard title="Register Student" link="/librarian/register-student" color="bg-orange-500" />
+              <QuickActionCard title="Issue Book" link="/librarian/issubook" color="bg-blue-700" />
+              <QuickActionCard title="Return Book" link="/librarian/returnbook" color="bg-red-500" />
+              <QuickActionCard title="Search Book" link="/librarian/searchbook" color="bg-teal-600" />
+              <QuickActionCard title="Search Student" link="/librarian/search-student" color="bg-indigo-600" />
+              <QuickActionCard title="Edit Profile" link="/librarian/profile" color="bg-gray-700" />
             </div>
           </>
         )}
-        <div className="flex justify-end mb-6">
-          <button onClick={() => setDarkMode(!darkMode)} className="p-2 rounded-md bg-gray-700 text-white hover:bg-gray-600 transition">
-            {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-          </button>
-        </div>
         {!isDashboard && (
-          <div className="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6">
+          <div className="bg-white shadow-lg rounded-2xl p-6">
             <Routes>
-              <Route path="register-book" element={<RegisterBook />} />
-              <Route path="register-student" element={<RegisterStudent />} />
-              <Route path="issuebook" element={<IssueBook />} />
-              <Route path="returnbook" element={<ReturnBook />} />
-              <Route path="searchbook" element={<SearchBook />} />
-              <Route path="search-student" element={<SearchStudent />} />
-              <Route path="profile" element={<Profile />} />
+              <Route path="/register-book" element={<RegisterBook />} />
+              <Route path="/register-student" element={<RegisterStudent />} />
+              <Route path="/issubook" element={<IssueBook />} />
+              <Route path="/returnbook" element={<ReturnBook />} />
+              <Route path="/searchbook" element={<SearchBook />} />
+              <Route path="/search-student" element={<SearchStudent />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/allstudent" element={<Libraian_Allstudent/>} />
+              <Route path="/books_uplodes" element={<Libraian_uplode_book/>} />
+              <Route path="/student_uplodes" element={<Libraian_uplode_student/>} />
             </Routes>
           </div>
         )}

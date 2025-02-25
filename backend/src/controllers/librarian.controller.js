@@ -125,46 +125,75 @@ export const dashboardData = async (req, res) => {
  * @desc Register a new student
  * @route POST /librarian/register-student
  */
+
 export const registerStudent = async (req, res) => {
   try {
     const { name, email, password, fileNo, parentName, mobile, department, branch } = req.body;
 
+    // Validate required fields
     if (!name || !email || !password || !fileNo || !parentName || !mobile || !department || !branch) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
+    // Validate email format
     if (!validator.isEmail(email)) {
       return res.status(400).json({ success: false, message: "Invalid email format" });
     }
 
+    // Validate password length
     if (password.length < 6) {
       return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" });
     }
 
+    // Validate file number format (5-digit number)
     if (!/^\d{5}$/.test(fileNo)) {
       return res.status(400).json({ success: false, message: "File No must be a 5-digit number" });
     }
 
+    // Validate mobile number format (10-digit number)
     if (!/^\d{10}$/.test(mobile)) {
       return res.status(400).json({ success: false, message: "Mobile number must be a valid 10-digit number" });
     }
 
+    // Validate branch selection
     const allowedBranches = ["CSE", "ECE", "EE", "Cyber", "Mining", "ME", "Automobile", "Civil"];
     if (!allowedBranches.includes(branch)) {
       return res.status(400).json({ success: false, message: `Branch must be one of: ${allowedBranches.join(", ")}` });
     }
 
+    // Check if email is already registered
+    const existingEmail = await Student.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: "A student with this email already exists" });
+    }
+
+    // Check if file number is already registered
     const existingStudent = await Student.findOne({ fileNo });
     if (existingStudent) {
       return res.status(400).json({ success: false, message: "Student with this File No already exists" });
     }
 
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const student = new Student({ name, email, password: hashedPassword, fileNo, parentName, mobile, department, branch });
+
+    // Create new student record
+    const student = new Student({
+      name,
+      email,
+      password: hashedPassword,
+      fileNo,
+      parentName,
+      mobile,
+      department,
+      branch,
+    });
+
+    // Save student to database
     await student.save();
 
     res.status(201).json({ success: true, message: "Student registered successfully", student });
   } catch (error) {
+    console.error("Error registering student:", error);
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };

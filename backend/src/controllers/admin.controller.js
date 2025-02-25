@@ -205,6 +205,20 @@ export const registerFaculty = async (req, res) => {
   }
 };
 
+export const getAllFaculty = async (req, res) => {
+  try {
+    const facultyList = await Faculty.find().select("-password"); // Exclude password field
+
+    if (!facultyList.length) {
+      return res.status(404).json({ success: false, message: "No faculty members found" });
+    }
+
+    res.status(200).json({ success: true, faculty: facultyList });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 
 /**
  * @desc Check server health

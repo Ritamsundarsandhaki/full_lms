@@ -5,6 +5,8 @@ import RegisterLibrarian from "./Register_libarian";
 import AdminAllLibrarians from "./Admin_alllibarian";
 import AdminAllStudents from "./Admin_allstudent";
 import ServerHealth from "./Server_helth";
+import Admin_registerFeclty from "./Admin_registerFeclty";
+import AdminAllFaculty from "./Admin_allfeclty";
 
 const AdminDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -72,9 +74,13 @@ const AdminDashboard = () => {
           <div className="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6">
             <Routes>
               <Route path="register-librarian" element={<RegisterLibrarian />} />
+              <Route path="register-faculty" element={<Admin_registerFeclty  />} />
               <Route path="all-librarians" element={<AdminAllLibrarians />} />
               <Route path="all-students" element={<AdminAllStudents />} />
+              <Route path="all-faculty" element={<AdminAllFaculty />} />
               <Route path="server-health" element={<ServerHealth />} />
+              <Route path="server-health" element={<ServerHealth />} />
+
             </Routes>
           </div>
         )}

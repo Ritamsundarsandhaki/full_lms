@@ -13,6 +13,7 @@ const RegisterStudent = () => {
     branch: "",
   });
 
+  const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
 
@@ -20,16 +21,36 @@ const RegisterStudent = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" }); // Clear field-specific error
+  };
+
+  const validateForm = () => {
+    let newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required.";
+    if (!formData.email.trim()) newErrors.email = "Email is required.";
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = "Invalid email format.";
+    if (!formData.password || formData.password.length < 6) newErrors.password = "Password must be at least 6 characters.";
+    if (!/^\d{5}$/.test(formData.fileNo)) newErrors.fileNo = "File No must be exactly 5 digits.";
+    if (!formData.parentName.trim()) newErrors.parentName = "Parent Name is required.";
+    if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number must be 10 digits.";
+    if (!formData.department.trim()) newErrors.department = "Department is required.";
+    if (!formData.branch) newErrors.branch = "Please select a branch.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Return true if no errors
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setMessage({ type: "", text: "" });
+
+    if (!validateForm()) return; // Stop if validation fails
+
+    setLoading(true);
 
     try {
       const response = await api.post("/api/librarian/register-student", formData);
-      console.log(response)
+
       if (response.data.success) {
         setMessage({ type: "success", text: "✅ Student registered successfully!" });
         setFormData({
@@ -46,7 +67,13 @@ const RegisterStudent = () => {
         setMessage({ type: "error", text: `⚠️ ${response.data.message}` });
       }
     } catch (error) {
-      setMessage({ type: "error", text: "⚠️ Server error. Please try again." });
+      if (error.response) {
+        setMessage({ type: "error", text: `⚠️ ${error.response.data.message || "Server error occurred."}` });
+      } else if (error.request) {
+        setMessage({ type: "error", text: "⚠️ No response from server. Please check your internet connection." });
+      } else {
+        setMessage({ type: "error", text: "⚠️ Something went wrong. Please try again." });
+      }
     }
 
     setLoading(false);
@@ -66,13 +93,13 @@ const RegisterStudent = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-          <InputField type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" required />
-          <InputField type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" required />
-          <InputField type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password (min 6 chars)" required />
-          <InputField type="text" name="fileNo" value={formData.fileNo} onChange={handleChange} placeholder="File No (5-digit)" required />
-          <InputField type="text" name="parentName" value={formData.parentName} onChange={handleChange} placeholder="Parent Name" required />
-          <InputField type="text" name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Mobile (10-digit)" required />
-          <InputField type="text" name="department" value={formData.department} onChange={handleChange} placeholder="Department" required />
+          <InputField type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Full Name" error={errors.name} />
+          <InputField type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" error={errors.email} />
+          <InputField type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password (min 6 chars)" error={errors.password} />
+          <InputField type="text" name="fileNo" value={formData.fileNo} onChange={handleChange} placeholder="File No (5-digit)" error={errors.fileNo} />
+          <InputField type="text" name="parentName" value={formData.parentName} onChange={handleChange} placeholder="Parent Name" error={errors.parentName} />
+          <InputField type="text" name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Mobile (10-digit)" error={errors.mobile} />
+          <InputField type="text" name="department" value={formData.department} onChange={handleChange} placeholder="Department" error={errors.department} />
 
           {/* Branch Selection Dropdown */}
           <div className="relative">
@@ -81,8 +108,8 @@ const RegisterStudent = () => {
               value={formData.branch}
               onChange={handleChange}
               required
-              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 
-                         focus:ring-2 focus:ring-indigo-400 transition-all duration-300 hover:bg-gray-100"
+              className={`w-full p-3 border rounded-lg bg-gray-50 text-gray-900 transition-all duration-300 
+                         ${errors.branch ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-indigo-400 hover:bg-gray-100"}`}
             >
               <option value="">Select Branch</option>
               {branches.map((branch) => (
@@ -91,6 +118,7 @@ const RegisterStudent = () => {
                 </option>
               ))}
             </select>
+            {errors.branch && <p className="text-red-500 text-sm mt-1">{errors.branch}</p>}
           </div>
 
           {/* Submit Button */}
@@ -109,18 +137,20 @@ const RegisterStudent = () => {
   );
 };
 
-// Reusable Input Field Component
-const InputField = ({ type, name, value, onChange, placeholder, required }) => (
-  <input
-    type={type}
-    name={name}
-    value={value}
-    onChange={onChange}
-    placeholder={placeholder}
-    required={required}
-    className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 
-               focus:ring-2 focus:ring-indigo-400 transition-all duration-300 hover:bg-gray-100 hover:shadow-md text-sm sm:text-base"
-  />
+// Reusable Input Field Component with Error Display
+const InputField = ({ type, name, value, onChange, placeholder, error }) => (
+  <div>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={`w-full p-3 border rounded-lg bg-gray-50 text-gray-900 transition-all duration-300 
+                 ${error ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-indigo-400 hover:bg-gray-100 hover:shadow-md"} text-sm sm:text-base`}
+    />
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  </div>
 );
 
 // Loading Spinner Component

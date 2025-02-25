@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../components/Axios";
 import StudentSidebar from "./StudentSidebar";
 import StudentHome from "./StudentHome";
@@ -9,11 +9,9 @@ import BookHistory from "./BookHisory";
 
 const StudentDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
-  );
   const [greeting, setGreeting] = useState("");
   const [studentData, setStudentData] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -34,13 +32,18 @@ const StudentDashboard = () => {
     setGreeting(hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening");
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("theme", darkMode ? "dark" : "light");
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("api/student/logout");
+      localStorage.removeItem("authToken");
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
-    <div className={`flex min-h-screen transition-all duration-300 ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
+    <div className="flex min-h-screen transition-all duration-300 bg-gray-100 text-gray-900">
       
       {/* Mobile Sidebar Toggle */}
       <button
@@ -61,16 +64,16 @@ const StudentDashboard = () => {
       <div className="flex-1 px-4 py-6 md:ml-64 transition-all duration-300">
         
         {/* Profile & Greeting Section */}
-        <div className="mb-6 p-6 bg-gradient-to-r from-blue-100 to-purple-200 dark:from-gray-700 dark:to-gray-800 shadow-md rounded-lg text-center flex flex-col items-center">
+        <div className="mb-6 p-6 bg-gradient-to-r from-blue-100 to-purple-200 shadow-md rounded-lg text-center flex flex-col items-center">
           <img 
             src="https://via.placeholder.com/90" 
             alt="Profile" 
             className="w-20 h-20 rounded-full mb-3 border-4 border-white shadow-lg"
           />
-          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-extrabold text-gray-900">
             {greeting}, {studentData ? studentData.name : "Student"}! 🎉
           </h1>
-          <p className="text-md text-gray-700 dark:text-gray-300 mt-2">
+          <p className="text-md text-gray-700 mt-2">
             Welcome back! Explore your dashboard.
           </p>
         </div>
@@ -78,7 +81,7 @@ const StudentDashboard = () => {
         {/* Dashboard Stats (Centered) */}
         <div className="flex flex-col items-center sm:grid sm:grid-cols-2 gap-6 mb-6">
           <DashboardCard title="Books Borrowed" value={studentData ? studentData.issuedBooks.length : 0} color="from-green-400 to-green-600" />
-          <DashboardCard title="Membership Tier" value={studentData ? studentData.department : "-"} color="from-yellow-400 to-yellow-600" />
+          <DashboardCard title="Course" value={studentData ? studentData.department : "-"} color="from-yellow-400 to-yellow-600" />
         </div>
 
         {/* Quick Actions */}
@@ -87,18 +90,18 @@ const StudentDashboard = () => {
           <QuickActionCard title="Check Book History" link="/student/book-history" color="from-orange-500 to-orange-700" />
         </div>
 
-        {/* Dark Mode Toggle */}
+        {/* Logout Button */}
         <div className="flex justify-end mb-6">
           <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="px-3 py-2 rounded-md bg-gray-700 text-white text-sm hover:bg-gray-600 transition-all shadow-md"
+            onClick={handleLogout}
+            className="px-3 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-500 transition-all shadow-md"
           >
-            {darkMode ? "Light Mode" : "Dark Mode"}
+            Logout
           </button>
         </div>
 
         {/* Main Content */}
-        <div className="bg-white dark:bg-gray-800 shadow-md rounded-md p-6">
+        <div className="bg-white shadow-md rounded-md p-6">
           <Routes>
             <Route path="/dashboard" element={<StudentHome />} />
             <Route path="/my-books" element={<MyBooks />} />

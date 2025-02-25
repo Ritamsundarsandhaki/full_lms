@@ -3,14 +3,15 @@ import api from "../../components/Axios";
 import { motion } from "framer-motion";
 
 const ReturnBook = () => {
-  const [formData, setFormData] = useState({ fileNo: "", bookIds: [""] });
+  const [formData, setFormData] = useState({ fileNo: "", employeeId: "", bookIds: [""] });
+  const [userType, setUserType] = useState("student");
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e, index) => {
     const { name, value } = e.target;
-    if (name === "fileNo") {
-      setFormData({ ...formData, fileNo: value });
+    if (name === "fileNo" || name === "employeeId") {
+      setFormData({ ...formData, [name]: value });
     } else {
       const updatedBookIds = [...formData.bookIds];
       updatedBookIds[index] = value;
@@ -26,8 +27,8 @@ const ReturnBook = () => {
     setLoading(true);
     setMessage(null);
 
-    if (!formData.fileNo.trim()) {
-      setMessage({ type: "error", text: "File Number is required." });
+    if (!formData.fileNo.trim() && !formData.employeeId.trim()) {
+      setMessage({ type: "error", text: "File Number or Employee ID is required." });
       setLoading(false);
       return;
     }
@@ -38,29 +39,20 @@ const ReturnBook = () => {
     }
 
     try {
-      const response = await api.post("/api/librarian/return-book", formData);
+      const response = await api.post("/api/librarian/return-book", { ...formData, userType });
       setMessage({
         type: response.data.success ? "success" : "error",
-        text: response.data.message || (response.data.success ? "Books returned successfully!" : "Some books could not be returned."),
+        text: response.data.message || "Books returned successfully!",
         details: [
           response.data.returnedBooks?.length ? `✅ Returned: ${response.data.returnedBooks.join(", ")}` : null,
-          response.data.failedBooks?.length ? `❌ Not Found: ${response.data.failedBooks.map(b => `${b.bookId} (${b.reason})`).join(", ")}` : null,
+          response.data.notFoundBooks?.length ? `❌ Not Found: ${response.data.notFoundBooks.join(", ")}` : null,
         ].filter(Boolean),
       });
       if (response.data.success) {
-        setFormData({ fileNo: "", bookIds: [""] });
+        setFormData({ fileNo: "", employeeId: "", bookIds: [""] });
       }
     } catch (error) {
-      let errorMessage = "Server error. Please try again.";
-      if (error.response) {
-        errorMessage = error.response.data.message || "An error occurred.";
-        if (error.response.data.errors) {
-          errorMessage += ` ${Object.values(error.response.data.errors).flat().join(" ")}`;
-        }
-      } else if (error.request) {
-        errorMessage = "Network error. Please check your connection.";
-      }
-      setMessage({ type: "error", text: errorMessage });
+      setMessage({ type: "error", text: error.response?.data?.message || "Server error. Please try again." });
     }
     setLoading(false);
   };
@@ -71,7 +63,12 @@ const ReturnBook = () => {
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">🔄 Return Book</h2>
         {message && <Modal message={message} onClose={() => setMessage(null)} />}
         <form onSubmit={handleSubmit} className="space-y-5">
-          <InputField type="text" name="fileNo" value={formData.fileNo} onChange={handleChange} placeholder="📁 Student File No" required />
+          <div className="flex space-x-4">
+            <button type="button" onClick={() => setUserType("student")} className={`p-3 rounded-lg font-semibold transition-all ${userType === "student" ? "bg-blue-600 text-white" : "bg-gray-200"}`}>Student</button>
+            <button type="button" onClick={() => setUserType("faculty")} className={`p-3 rounded-lg font-semibold transition-all ${userType === "faculty" ? "bg-blue-600 text-white" : "bg-gray-200"}`}>Faculty</button>
+          </div>
+          {userType === "student" && <InputField type="text" name="fileNo" value={formData.fileNo} onChange={handleChange} placeholder="📁 Student File No" required />}
+          {userType === "faculty" && <InputField type="text" name="employeeId" value={formData.employeeId} onChange={handleChange} placeholder="🏢 Employee ID" required />}
           {formData.bookIds.map((bookId, index) => (
             <div key={index} className="flex items-center space-x-2">
               <InputField type="text" name="bookId" value={bookId} onChange={(e) => handleChange(e, index)} placeholder="📖 Book ID (Min 5 digits)" required />

@@ -1,9 +1,22 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Users, UserPlus, ClipboardList, Server, LogOut } from "lucide-react";
+import axiosInstance from "../../components/Axios";
 
 const AdminSidebar = ({ isOpen, toggleSidebar }) => {
   const location = useLocation(); // Get current route
+  const navigate = useNavigate(); // For navigation
+
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("/api/admin/logout");
+      localStorage.removeItem("adminToken"); // Clear stored token if any
+      navigate("/"); // Redirect to home page
+    } catch (error) {
+      console.error("Logout failed:", error.response?.data?.message || "Server error");
+    }
+  };
 
   return (
     <div
@@ -22,12 +35,17 @@ const AdminSidebar = ({ isOpen, toggleSidebar }) => {
       {/* Sidebar Links */}
       <nav className="p-4 space-y-3">
         <SidebarLink to="/admin/register-librarian" label="Register Librarian" icon={<UserPlus size={22} />} location={location} />
+        <SidebarLink to="/admin/all-faculty" label="All Faculty" icon={<UserPlus size={22} />} location={location} />
         <SidebarLink to="/admin/all-librarians" label="All Librarians" icon={<Users size={22} />} location={location} />
+        <SidebarLink to="/admin/register-faculty" label="Register Faculty" icon={<UserPlus size={22} />} location={location} />
         <SidebarLink to="/admin/all-students" label="All Students" icon={<ClipboardList size={22} />} location={location} />
         <SidebarLink to="/admin/server-health" label="Server Health" icon={<Server size={22} />} location={location} />
 
         {/* Logout Button */}
-        <button className="mt-8 flex items-center w-full px-5 py-3 text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-800 rounded-lg transition-all duration-300 shadow-md">
+        <button
+          onClick={handleLogout}
+          className="mt-8 flex items-center w-full px-5 py-3 text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-800 rounded-lg transition-all duration-300 shadow-md"
+        >
           <LogOut size={22} className="mr-3" />
           Logout
         </button>
