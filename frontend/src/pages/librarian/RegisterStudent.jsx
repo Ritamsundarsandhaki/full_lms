@@ -32,7 +32,12 @@ const RegisterStudent = () => {
     if (!formData.password || formData.password.length < 6) newErrors.password = "Password must be at least 6 characters.";
     if (!/^\d{5}$/.test(formData.fileNo)) newErrors.fileNo = "File No must be exactly 5 digits.";
     if (!formData.parentName.trim()) newErrors.parentName = "Parent Name is required.";
-    if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number must be 10 digits.";
+    
+    // ✅ Updated mobile validation for Indian numbers
+    if (!/^[6789]\d{9}$/.test(formData.mobile)) {
+      newErrors.mobile = "Enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).";
+    }
+
     if (!formData.department.trim()) newErrors.department = "Department is required.";
     if (!formData.branch) newErrors.branch = "Please select a branch.";
 
@@ -52,7 +57,7 @@ const RegisterStudent = () => {
       const response = await api.post("/api/librarian/register-student", formData);
 
       if (response.data.success) {
-        setMessage({ type: "success", text: "✅ Student registered successfully!" });
+        setMessage({ type: "success", text: " Student registered successfully!" });
         setFormData({
           name: "",
           email: "",
@@ -82,12 +87,12 @@ const RegisterStudent = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 p-4 sm:p-6">
       <div className="w-full max-w-lg md:max-w-2xl bg-white shadow-xl rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-2xl">
-        <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-6">🎓 Register Student</h2>
+        <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-6"> Register Student</h2>
 
         {message.text && (
           <p className={`p-4 text-center rounded-lg font-medium text-lg transition-all duration-300 
-            ${message.type === "success" ? "bg-green-100 text-green-800 border border-green-400" 
-            : "bg-red-100 text-red-800 border border-red-400"}`}>
+            ${message.type === "success" ? "bg-green-100 text-green-800 border border-green-400 mb-1" 
+            : "bg-red-100 text-red-800 border border-red-400 mb-1"}`}>
             {message.text}
           </p>
         )}
@@ -129,7 +134,7 @@ const RegisterStudent = () => {
                        hover:from-indigo-600 hover:to-pink-600 hover:scale-105 active:scale-95 disabled:opacity-50
                        transition-all duration-200 flex justify-center items-center shadow-lg"
           >
-            {loading ? <LoadingSpinner /> : "🚀 Register"}
+            {loading ? <LoadingSpinner /> : " Register"}
           </button>
         </form>
       </div>

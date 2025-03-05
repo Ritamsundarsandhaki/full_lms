@@ -6,6 +6,7 @@ import LibrarianDashboard from "./pages/librarian/LibrarianDashboard";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import Unauthorized from "./pages/open/Unauthorized";
 import { AuthProvider, useAuth } from "./components/AuthContext";
+import Aboutus from "./pages/open/Aboutus";
 
 // ✅ Protected Route Component
 const ProtectedRoute = ({ allowedRoles }) => {
@@ -26,7 +27,8 @@ const App = () => {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/aboutus" element={<Aboutus />} />
+          <Route path="/*" element={<Unauthorized />} />
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

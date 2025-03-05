@@ -41,8 +41,8 @@ function Navbar() {
           
           {/* Right Side Links */}
           <div className="flex items-center space-x-7">
-            <NavLink to="/register" className="hover:text-[#91B2F2] block py-3 px-5 lg:inline text-lg font-sans">
-              Register
+            <NavLink to="/aboutus" className="hover:text-[#91B2F2] block py-3 px-5 lg:inline text-lg font-sans">
+            About us
             </NavLink>
             <NavLink to="/login" className="block py-3 lg:inline">
               <button className="bg-[#578BF2] text-[#ffffff] px-6 py-2 rounded-full hover:bg-[#91B2F2] transition font-medium shadow-md text-lg font-sans">
@@ -58,7 +58,7 @@ function Navbar() {
         <div className="lg:hidden absolute top-16 left-0 w-full bg-[#021E73] shadow-md flex flex-col items-center space-y-4 py-4">
           <NavLink to="/" className="text-[#ffffff] hover:text-[#91B2F2] font-sans" onClick={() => setIsOpen(false)}>Home</NavLink>
           <NavLink to="/explore" className="text-[#ffffff] hover:text-[#91B2F2] font-sans" onClick={() => setIsOpen(false)}>Explore</NavLink>
-          <NavLink to="/register" className="text-[#ffffff] hover:text-[#91B2F2] font-sans" onClick={() => setIsOpen(false)}>Register</NavLink>
+          <NavLink to="/aboutus" className="text-[#ffffff] hover:text-[#91B2F2] font-sans" onClick={() => setIsOpen(false)}>About us</NavLink>
           <NavLink to="/login" className="text-[#ffffff] hover:text-[#91B2F2] font-sans" onClick={() => setIsOpen(false)}>Login</NavLink>
         </div>
       )}

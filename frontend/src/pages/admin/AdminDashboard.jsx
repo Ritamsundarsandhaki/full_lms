@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation, Link } from "react-router-dom";
+import { Routes, Route, useLocation, Link, useNavigate } from "react-router-dom";
+import axiosInstance from "../../components/Axios";  // Ensure you are using Axios instance
 import AdminSidebar from "./Adminsidebar";
 import RegisterLibrarian from "./Register_libarian";
 import AdminAllLibrarians from "./Admin_alllibarian";
@@ -13,6 +14,7 @@ const AdminDashboard = () => {
   const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
   const [greeting, setGreeting] = useState("");
   const location = useLocation();
+  const navigate = useNavigate(); // Use for redirection
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -23,6 +25,23 @@ const AdminDashboard = () => {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
+
+  // Handle 402 response globally
+  useEffect(() => {
+    const responseInterceptor = axiosInstance.interceptors.response.use(
+      (response) => response, 
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          navigate("/login"); // Redirect to home page
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axiosInstance.interceptors.response.eject(responseInterceptor);
+    };
+  }, [navigate]);
 
   const isDashboard = location.pathname === "/admin/dashboard";
 
@@ -79,8 +98,6 @@ const AdminDashboard = () => {
               <Route path="all-students" element={<AdminAllStudents />} />
               <Route path="all-faculty" element={<AdminAllFaculty />} />
               <Route path="server-health" element={<ServerHealth />} />
-              <Route path="server-health" element={<ServerHealth />} />
-
             </Routes>
           </div>
         )}

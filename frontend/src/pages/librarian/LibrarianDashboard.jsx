@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation, Link } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate, Link } from "react-router-dom";
 import axiosInstance from "../../components/Axios";
 import LibrarianSidebar from "./LibrarianSidebar";
 import RegisterBook from "./RegisterBook";
@@ -16,10 +16,16 @@ import Libraian_uplode_student from "./Libraian_uplode_student";
 const LibrarianDashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [greeting, setGreeting] = useState("");
-  const [dashboardData, setDashboardData] = useState({ totalBooks: 0, totalStudents: 0, issuedBooks: 0, availableBooks: 0 });
+  const [dashboardData, setDashboardData] = useState({
+    totalBooks: 0,
+    totalStudents: 0,
+    issuedBooks: 0,
+    availableBooks: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate(); // Hook to navigate pages
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -30,20 +36,24 @@ const LibrarianDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const response = await axiosInstance.get("/api/librarian/dashboardData");
-        console.log(response);
         if (response.data.success) {
           setDashboardData(response.data.data);
         } else {
           throw new Error("Failed to fetch dashboard data");
         }
       } catch (err) {
-        setError(err.message);
+        if (err.response && (err.response.status === 401 || err.response.status === 402)) {
+          console.error("Session expired or unauthorized access. Redirecting to login...");
+          navigate("/login"); // Redirect to login page
+        } else {
+          setError(err.message);
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchDashboardData();
-  }, []);
+  }, [navigate]);
 
   const isDashboard = location.pathname === "/librarian/dashboard";
 
@@ -97,9 +107,9 @@ const LibrarianDashboard = () => {
               <Route path="/searchbook" element={<SearchBook />} />
               <Route path="/search-student" element={<SearchStudent />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/allstudent" element={<Libraian_Allstudent/>} />
-              <Route path="/books_uplodes" element={<Libraian_uplode_book/>} />
-              <Route path="/student_uplodes" element={<Libraian_uplode_student/>} />
+              <Route path="/allstudent" element={<Libraian_Allstudent />} />
+              <Route path="/books_uplodes" element={<Libraian_uplode_book />} />
+              <Route path="/student_uplodes" element={<Libraian_uplode_student />} />
             </Routes>
           </div>
         )}

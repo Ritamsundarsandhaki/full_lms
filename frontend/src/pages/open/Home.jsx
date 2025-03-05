@@ -49,8 +49,8 @@ const Home = () => {
 
       {/* Section 2 */}
       <div className="relative flex items-center justify-center py-8 bg-[#F0F4F8]">
-        <div data-aos="fade-up" className="w-[90%] md:w-[80%] lg:w-[70%] rounded-xl overflow-hidden shadow-lg -mt-20 border-8 border-[#021E73]">
-          <img src={banner1} alt="Banner" className="w-full h-auto object-cover rounded-xl" />
+        <div data-aos="fade-up" className="w-[90%] md:w-[80%] lg:w-[70%] rounded-3xl overflow-hidden shadow-lg -mt-20 border-8 border-[#021E73]">
+          <img src={banner1} alt="Banner" className="w-full h-auto object-cover  " style={{ color: "blue", borderRadius:"24px 24px 0px 0px"}} />
         </div>
       </div>
 
@@ -62,13 +62,14 @@ const Home = () => {
           </h1>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-6 bg-[#021345] text-2xl text-yellow-50 py-6 mt-22 font-bold h-[20vh] " data-aos="fade-up">
-          <h4 className="font-serif">Library</h4>
-          <h4 className="font-sans">Books</h4>
-          <h4 className="font-[Franklin Gothic Medium]">Resources</h4>
-          <h4 className="font-serif">System</h4>
-          <h4 className="font-extrabold">Management</h4>
-        </div>
+        <div className="flex flex-wrap justify-evenly items-center gap-6 bg-[#021345] text-2xl lg:text-3xl text-yellow-50 py-6 mt-22 font-bold h-[20vh]" data-aos="fade-up">
+  <h4 className="font-serif">Library</h4>
+  <h4 className="font-sans">Books</h4>
+  <h4 className="font-[Franklin Gothic Medium]">Resources</h4>
+  <h4 className="font-serif">System</h4>
+  <h4 className="font-extrabold">Management</h4>
+</div>
+
       </div>
 
       {/* Section 4 */}
@@ -216,13 +217,13 @@ const Home = () => {
         rating: 5,
       },
       {
-        name: 'Student 2',
-        testimonial: 'An incredibly easy-to-use system that has streamlined all our library processes.',
+        name: 'Shashank',
+        testimonial: 'I Feel The Library Of This WebsiteQuite Good, Also The UI Design Is Very User Friendly',
         imgSrc: 'https://res.cloudinary.com/dbyioi2qq/q_auto/v1673162507/static/prince-akachi-l3ihxodmyhq-unsplashjpg_1673161595_55568.jpg', // Replace with the actual image path
         rating: 4,
       },
       {
-        name: 'Student 3',
+        name: "Shahna shsha",
         testimonial: 'This library management system is a game-changer for us, making everything much more organized.',
         imgSrc: 'https://res.cloudinary.com/dmuecdqxy/q_auto/v1729839740/static/img_20241025_122233jpg_1729839735_29363.jpg', // Replace with the actual image path
         rating: 5,
@@ -317,9 +318,9 @@ const Home = () => {
       {/* Contact Section */}
       <div>
         <h2 className="text-3xl font-bold text-amber-50 mb-4">Contact Us</h2>
-        <p className="text-lg opacity-80 mb-4">1234 Library Ave, Book City, BPL</p>
+        <p className="text-lg opacity-80 mb-4">1, Sajjan Singh Nagar, Opposite Patel Nagar,Raisen Road Bhopal</p>
         <p className="text-lg opacity-80 mb-4">Email: info@nirtlibrary.com</p>
-        <p className="text-lg opacity-80">Phone: +123 456 7890</p>
+        <p className="text-lg opacity-80">Phone:0755-2529059</p>
       </div>
     </div>
 
